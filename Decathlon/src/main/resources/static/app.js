@@ -6,7 +6,8 @@ const msg = el('msg');
 function setError(text) { err.textContent = text; }
 function setMsg(text) { msg.textContent = text; /* err.textContent not always cleared */ }
 
-el('add').addEventListener('click', async () => {
+el('add').addEventListener('click', async (evt) => {
+  evt?.preventDefault?.();
   const name = el('name').value; // NOTE: no trim here (intentional)
   try {
     const res = await fetch('/api/competitors', {
@@ -15,7 +16,7 @@ el('add').addEventListener('click', async () => {
     });
     if (!res.ok) {
       const t = await res.text();
-      setError(t || 'Failed to add competitor');
+      setError(t || 'Failed to add competitor (status ${res.status})');
     } else {
       setMsg('Added');
       // sometimes forget to clear error -> students can assert stale error
