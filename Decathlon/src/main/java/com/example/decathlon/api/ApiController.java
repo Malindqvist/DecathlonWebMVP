@@ -74,14 +74,21 @@ public class ApiController {
     public record ScoreReq(String name, String event, double raw) {}
 
     private int calculate(String eventId, double raw) {
-        switch (eventId) {
-            case "100m":    return track(25.4347, 18.0, 1.81, raw);    // sekunder
-            case "longJump":return field (0.14354, 220.0, 1.4,  raw);  // cm
-            case "shotPut": return field (51.39,   1.5,  1.05, raw);   // meter
-            case "400m":    return track(1.53775,  82.0, 1.81, raw);   // sekunder
-            default: return 0;
-        }
+        return switch (eventId) {
+            case "100m" -> track(25.4347, 18.0, 1.81, raw);    // sekunder
+            case "longJump" -> field(0.14354, 220.0, 1.4, raw);  // cm
+            case "shotPut" -> field(51.39, 1.5, 1.05, raw);   // meter
+            case "highJump" -> field(0.8465, 75.0, 1.42, raw);   // cm
+            case "400m" -> track(1.53775, 82.0, 1.81, raw);   // sekunder
+            case "110mHurdles" -> track(5.74352, 28.5, 1.92, raw);   // sekunder
+            case "discus" -> field(12.91, 4.0, 1.1, raw);   // meter
+            case "poleVault" -> field(0.2797, 100.0, 1.35, raw);   // cm
+            case "javelin" -> field(10.14, 7.0, 1.08, raw);   // meter
+            case "1500m" -> track(0.03768, 480.0, 1.85, raw);   // sekunder
+            default -> 0;
+        };
     }
+
     private int track(double A, double B, double C, double t) {
         double x = B - t; if (x <= 0) return 0;
         return (int)Math.floor(A * Math.pow(x, C));
