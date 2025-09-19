@@ -2,13 +2,12 @@ const el = (id) => document.getElementById(id);
 const err = el('error');
 const msg = el('msg');
 
-// Intentionally inconsistent: we sometimes forget to clear error on success
 function setError(text) { err.textContent = text; }
-function setMsg(text) { msg.textContent = text; /* err.textContent not always cleared */ }
+function setMsg(text) { msg.textContent = text; }
 
 el('add').addEventListener('click', async (evt) => {
   evt?.preventDefault?.();
-  const name = el('name').value; // NOTE: no trim here (intentional)
+  const name = el('name').value;
   try {
     const res = await fetch('/api/competitors', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -16,10 +15,9 @@ el('add').addEventListener('click', async (evt) => {
     });
     if (!res.ok) {
       const t = await res.text();
-      setError(t || 'Failed to add competitor (status ${res.status})');
+      setError(t || `Failed to add competitor (status ${res.status})`);
     } else {
       setMsg('Added');
-      // sometimes forget to clear error -> students can assert stale error
     }
     await renderStandings();
   } catch (e) {
@@ -33,6 +31,7 @@ el('save').addEventListener('click', async () => {
     event: el('event').value,
     raw: parseFloat(el('raw').value)
   };
+  console.log('POST /api/score payload:', body);
   try {
     const res = await fetch('/api/score', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -46,7 +45,7 @@ el('save').addEventListener('click', async () => {
   }
 });
 
-let sortBroken = false; // becomes true after export -> sorting bug
+let sortBroken = false;
 
 el('export').addEventListener('click', async () => {
   try {
@@ -57,7 +56,7 @@ el('export').addEventListener('click', async () => {
     a.href = URL.createObjectURL(blob);
     a.download = 'results.csv';
     a.click();
-    sortBroken = true; // trigger sorting issue after export
+    sortBroken = true;
   } catch (e) {
     setError('Export failed');
   }
@@ -68,21 +67,22 @@ async function renderStandings() {
     const res = await fetch('/api/standings');
     const data = await res.json();
 
-    // Normally sort by total desc; but after export, we "forget" to sort
+    console.log('standings data:', JSON.parse(JSON.stringify(data)));
+
     const rows = (sortBroken ? data : data.sort((a,b)=> (b.total||0)-(a.total||0)))
       .map(r => `<tr>
         <td>${escapeHtml(r.name)}</td>
-                <td>${r.scores?.["100m"] ?? ''}</td>
-                <td>${r.scores?.["longJump"] ?? ''}</td>
-                <td>${r.scores?.["shotPut"] ?? ''}</td>
-                <td>${r.scores?.["highJump"] ?? ''}</td>
-                <td>${r.scores?.["400m"] ?? ''}</td>
-                <td>${r.scores?.["110mHurdles"] ?? ''}</td>
-                <td>${r.scores?.["discus"] ?? ''}</td>
-                <td>${r.scores?.["poleVault"] ?? ''}</td>
-                <td>${r.scores?.["javelin"] ?? ''}</td>
-                <td>${r.scores?.["1500m"] ?? ''}</td>
-                <td>${r.total ?? 0}</td>
+        <td>${r.scores?.["100m"] ?? ''}</td>
+        <td>${r.scores?.["longJump"] ?? ''}</td>
+        <td>${r.scores?.["shotPut"] ?? ''}</td>
+        <td>${r.scores?.["highJump"] ?? ''}</td>
+        <td>${r.scores?.["400m"] ?? ''}</td>
+        <td>${r.scores?.["110mHurdles"] ?? ''}</td>
+        <td>${r.scores?.["discus"] ?? ''}</td>
+        <td>${r.scores?.["poleVault"] ?? ''}</td>
+        <td>${r.scores?.["javelin"] ?? ''}</td>
+        <td>${r.scores?.["1500m"] ?? ''}</td>
+        <td>${r.total ?? 0}</td>
       </tr>`).join('');
 
     el('standings').innerHTML = rows;
@@ -92,7 +92,9 @@ async function renderStandings() {
 }
 
 function escapeHtml(s){
-  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  return String(s).replace(/[&<>"]/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]
+  ));
 }
 
 renderStandings();
