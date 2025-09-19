@@ -32,9 +32,9 @@ public class MainGUI {
 
         // Dropdown for selecting a discipline
         String[] disciplines = {
-                "100m", "400m", "1500m", "110m Hurdles",
-                "Long Jump", "High Jump", "Pole Vault",
-                "Discus Throw", "Javelin Throw", "Shot Put"
+                "100m (s)", "Long Jump (cm)", "Shot Put (m)", "High Jump (cm)",
+                "400m (s)", "110m Hurdles (s)", "Discus Throw (m)", "Pole Vault (cm)",
+                "Javelin Throw (m)", "1500m (s)"
         };
         disciplineBox = new JComboBox<>(disciplines);
         panel.add(new JLabel("Select Discipline:"));
@@ -84,52 +84,52 @@ public class MainGUI {
 
                 int score = 0;
                 switch (discipline) {
-                    case "100m": {
+                    case "100m (s)": {
                         Deca100M deca100M = new Deca100M();
                         score = deca100M.calculateResult(result);
                         break;
                     }
-                    case "400m": {
+                    case "400m (s)": {
                         Deca400M deca400M = new Deca400M();
                         score = deca400M.calculateResult(result);
                         break;
                     }
-                    case "1500m": {
+                    case "1500m (s)": {
                         Deca1500M deca1500M = new Deca1500M();
                         score = deca1500M.calculateResult(result);
                         break;
                     }
-                    case "110m Hurdles": {
+                    case "110m Hurdles (s)": {
                         Deca110MHurdles deca110MHurdles = new Deca110MHurdles();
                         score = deca110MHurdles.calculateResult(result);
                         break;
                     }
-                    case "Long Jump": {
+                    case "Long Jump (cm)": {
                         DecaLongJump decaLongJump = new DecaLongJump();
                         score = decaLongJump.calculateResult(result);
                         break;
                     }
-                    case "High Jump": {
+                    case "High Jump (cm)": {
                         DecaHighJump decaHighJump = new DecaHighJump();
                         score = decaHighJump.calculateResult(result);
                         break;
                     }
-                    case "Pole Vault": {
+                    case "Pole Vault (cm)": {
                         DecaPoleVault decaPoleVault = new DecaPoleVault();
                         score = decaPoleVault.calculateResult(result);
                         break;
                     }
-                    case "Discus Throw": {
+                    case "Discus Throw (m)": {
                         DecaDiscusThrow decaDiscusThrow = new DecaDiscusThrow();
                         score = decaDiscusThrow.calculateResult(result);
                         break;
                     }
-                    case "Javelin Throw": {
+                    case "Javelin Throw (m)": {
                         DecaJavelinThrow decaJavelinThrow = new DecaJavelinThrow();
                         score = decaJavelinThrow.calculateResult(result);
                         break;
                     }
-                    case "Shot Put": {
+                    case "Shot Put (m)": {
                         DecaShotPut decaShotPut = new DecaShotPut();
                         score = decaShotPut.calculateResult(result);
                         break;
