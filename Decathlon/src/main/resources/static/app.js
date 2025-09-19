@@ -72,10 +72,17 @@ async function renderStandings() {
     const rows = (sortBroken ? data : data.sort((a,b)=> (b.total||0)-(a.total||0)))
       .map(r => `<tr>
         <td>${escapeHtml(r.name)}</td>
-        <td>${r.scores?.["100m"] ?? ''}</td>
-        <td>${r.scores?.["longJump"] ?? ''}</td>
-        <td>${r.scores?.["shotPut"] ?? ''}</td>
-        <td>${r.scores?.["400m"] ?? ''}</td>
+        <td>${escapeHtml(r.name)}</td>
+                <td>${r.scores?.["100m"] ?? ''}</td>
+                <td>${r.scores?.["longJump"] ?? ''}</td>
+                <td>${r.scores?.["shotPut"] ?? ''}</td>
+                <td>${r.scores?.["highJump"] ?? ''}</td>
+                <td>${r.scores?.["400m"] ?? ''}</td>
+                <td>${r.scores?.["110mHurdles"] ?? ''}</td>
+                <td>${r.scores?.["discus"] ?? ''}</td>
+                <td>${r.scores?.["poleVault"] ?? ''}</td>
+                <td>${r.scores?.["javelin"] ?? ''}</td>
+                <td>${r.scores?.["1500m"] ?? ''}</td>
         <td>${r.total ?? 0}</td>
       </tr>`).join('');
 
