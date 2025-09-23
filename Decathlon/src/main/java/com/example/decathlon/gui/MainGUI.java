@@ -42,7 +42,7 @@ public class MainGUI {
 
         // Input for result
         resultField = new JTextField(10);
-        panel.add(new JLabel("Enter Result:"));
+        panel.add(new JLabel("Result:"));
         panel.add(resultField);
 
         // Button to calculate and display result
