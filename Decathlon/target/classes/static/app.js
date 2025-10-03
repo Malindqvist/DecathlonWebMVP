@@ -1,93 +1,23 @@
 const el = (id) => document.getElementById(id);
 const err = el('error');
 const msg = el('msg');
-const MODE = {
-  DEC: 'DEC',
-  HEP: 'HEP'
-};
 
-const EVENTS_BY_MODE = {
-  DEC: [
-    { key: '100m', label: '100m (s)' },
-    { key: 'longJump', label: 'Long Jump (cm)' },
-    { key: 'shotPut', label: 'Shot Put (m)' },
-    { key: '400m', label: '400m (s)' },
-  ],
-  HEP: [
-    { key: '100mHurdles', label: '100m Hurdles (s)' },
-    { key: 'highJump',    label: 'High Jump (cm)' },
-    { key: 'shotPut',     label: 'Shot Put (m)' },
-    { key: '200m',        label: '200m (s)' },
-    { key: 'longJump',    label: 'Long Jump (cm)' },
-    { key: 'javelinThrow',label: 'Javelin (m)' },
-    { key: '800m',        label: '800m (s)' },
-  ],
-};
-
-const modeSel = el('mode');
-const eventSel = el('event');
-
-function currentMode() {
-  return modeSel?.value || MODE.DEC;
-}
-
-function rebuildEventSelect() {
-  const events = EVENTS_BY_MODE[currentMode()];
-  eventSel.innerHTML = events.map(ev => `<option value="${ev.key}">${ev.label}</option>`).join('');
-  eventSel.selectedIndex = 0;
-}
-
-
-function rebuildStandingsHeader() {
-  const events = EVENTS_BY_MODE[currentMode()];
-  const thead = document.querySelector('thead > tr');
-  // Bas: Name + eventkolumner + Total
-  thead.innerHTML = [
-    '<th>Name</th>',
-    ...events.map(ev => `<th>${ev.label.split(' (')[0]}</th>`),
-    '<th>Total</th>'
-  ].join('');
-}
-
-modeSel.addEventListener('change', async () => {
-  rebuildEventSelect();
-  rebuildStandingsHeader();
-  await renderStandings();
-});
-
-// Init vid start
-rebuildEventSelect();
-rebuildStandingsHeader();
-renderStandings();
-
-
-// Intentionally inconsistent: we sometimes forget to clear error on success
 function setError(text) { err.textContent = text; }
-function setMsg(text) { msg.textContent = text; /* err.textContent not always cleared */ }
-
-const raw = el('raw');
-raw.addEventListener('keydown', (e) => {
-  if (['-','+','e','E'].includes(e.key)) e.preventDefault();
-});
-raw.addEventListener('input', () => {
-  if (raw.value && Number(raw.value) < 0) raw.value = '';
-});
+function setMsg(text) { msg.textContent = text; }
 
 el('add').addEventListener('click', async (evt) => {
   evt?.preventDefault?.();
-  const name = el('name').value; // NOTE: no trim here (intentional)
+  const name = el('name').value;
   try {
-  const res = await fetch(`/api/competitors?mode=${currentMode()}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name })
-  });
+    const res = await fetch('/api/competitors', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
     if (!res.ok) {
       const t = await res.text();
-      setError(t || 'Failed to add competitor (status ${res.status})');
+      setError(t || `Failed to add competitor (status ${res.status})`);
     } else {
       setMsg('Added');
-      // sometimes forget to clear error -> students can assert stale error
     }
     await renderStandings();
   } catch (e) {
@@ -96,17 +26,12 @@ el('add').addEventListener('click', async (evt) => {
 });
 
 el('save').addEventListener('click', async () => {
-  const rawInput = el('raw');
-  if (!rawInput.checkValidity()) {  // respekterar min="0" + required
-    rawInput.reportValidity();
-    return;
-  }
   const body = {
     name: el('name2').value,
     event: el('event').value,
-    raw: Number(rawInput.value),
-    mode: currentMode(),
+    raw: parseFloat(el('raw').value)
   };
+  console.log('POST /api/score payload:', body);
   try {
     const res = await fetch('/api/score', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -115,17 +40,16 @@ el('save').addEventListener('click', async () => {
     const json = await res.json();
     setMsg(`Saved: ${json.points} pts`);
     await renderStandings();
-  } catch {
+  } catch (e) {
     setError('Score failed');
   }
 });
 
-
-let sortBroken = false; // becomes true after export -> sorting bug
+let sortBroken = false;
 
 el('export').addEventListener('click', async () => {
   try {
-    const res = await fetch(`/api/export.csv?mode=${currentMode()}`); // <-- ändra
+    const res = await fetch('/api/export.csv');
     const text = await res.text();
     const blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
@@ -138,25 +62,28 @@ el('export').addEventListener('click', async () => {
   }
 });
 
-function escapeHtml(s){
-  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-}
-
 async function renderStandings() {
   try {
-    const res = await fetch(`/api/standings?mode=${currentMode()}`); // <-- viktigt
+    const res = await fetch('/api/standings');
     const data = await res.json();
-    const events = EVENTS_BY_MODE[currentMode()];
+
+    console.log('standings data:', JSON.parse(JSON.stringify(data)));
 
     const rows = (sortBroken ? data : data.sort((a,b)=> (b.total||0)-(a.total||0)))
-      .map(r => {
-        const tds = events.map(ev => `<td>${r.scores?.[ev.key] ?? ''}</td>`).join('');
-        return `<tr>
-          <td>${escapeHtml(r.name)}</td>
-          ${tds}
-          <td>${r.total ?? 0}</td>
-        </tr>`;
-      }).join('');
+      .map(r => `<tr>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${r.scores?.["100m"] ?? ''}</td>
+        <td>${r.scores?.["longJump"] ?? ''}</td>
+        <td>${r.scores?.["shotPut"] ?? ''}</td>
+        <td>${r.scores?.["highJump"] ?? ''}</td>
+        <td>${r.scores?.["400m"] ?? ''}</td>
+        <td>${r.scores?.["110mHurdles"] ?? ''}</td>
+        <td>${r.scores?.["discus"] ?? ''}</td>
+        <td>${r.scores?.["poleVault"] ?? ''}</td>
+        <td>${r.scores?.["javelin"] ?? ''}</td>
+        <td>${r.scores?.["1500m"] ?? ''}</td>
+        <td>${r.total ?? 0}</td>
+      </tr>`).join('');
 
     el('standings').innerHTML = rows;
   } catch (e) {
@@ -164,5 +91,10 @@ async function renderStandings() {
   }
 }
 
+function escapeHtml(s){
+  return String(s).replace(/[&<>"]/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]
+  ));
+}
 
 renderStandings();

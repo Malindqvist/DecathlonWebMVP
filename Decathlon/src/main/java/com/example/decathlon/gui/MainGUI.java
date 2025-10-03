@@ -4,33 +4,18 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.*;
-import com.example.decathlon.deca.*;
-import com.example.decathlon.heptathlon.*;
+import com.example.decathlon.deca.*; // contains Deca100M, Deca400M, ... and InvalidResultException
+import com.example.decathlon.common.InputName;
 
 public class MainGUI {
 
-    private static final String MODE_DEC = "Decathlon";
-    private static final String MODE_HEP = "Heptathlon";
-
-    private JComboBox<String> modeBox;      // "Decathlon" / "Heptathlon"
     private JTextField nameField;
     private JTextField resultField;
     private JComboBox<String> disciplineBox;
     private JTextArea outputArea;
 
-    private static final String[] DEC_EVENTS = {
-            "100m", "400m", "1500m", "110m Hurdles",
-            "Long Jump", "High Jump", "Pole Vault",
-            "Discus Throw", "Javelin Throw", "Shot Put"
-    };
-
-    private static final String[] HEP_EVENTS = {
-            "100m Hurdles", "High Jump", "Shot Put",
-            "200m", "Long Jump", "Javelin Throw", "800m"
-    };
-
     public static void main(String[] args) {
-        new MainGUI().createAndShowGUI();
+        SwingUtilities.invokeLater(() -> new MainGUI().createAndShowGUI());
     }
 
     private void createAndShowGUI() {
@@ -38,27 +23,26 @@ public class MainGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 450);
 
-        // 0 rader => GridLayout växer med antalet komponenter
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-
-        // Mode select
-        panel.add(new JLabel("Select Mode:"));
-        modeBox = new JComboBox<>(new String[]{MODE_DEC, MODE_HEP});
-        panel.add(modeBox);
+        JPanel panel = new JPanel(new GridLayout(7, 1));
 
         // Input for competitor's name
-        panel.add(new JLabel("Enter Competitor's Name:"));
         nameField = new JTextField(20);
+        panel.add(new JLabel("Enter Competitor's Name:"));
         panel.add(nameField);
 
-        // Dropdown for selecting discipline
+        // Dropdown for selecting a discipline
+        String[] disciplines = {
+                "100m (s)", "Long Jump (cm)", "Shot Put (m)", "High Jump (cm)",
+                "400m (s)", "110m Hurdles (s)", "Discus Throw (m)", "Pole Vault (cm)",
+                "Javelin Throw (m)", "1500m (s)"
+        };
+        disciplineBox = new JComboBox<>(disciplines);
         panel.add(new JLabel("Select Discipline:"));
-        disciplineBox = new JComboBox<>(DEC_EVENTS);
         panel.add(disciplineBox);
 
         // Input for result
-        panel.add(new JLabel("Enter Result:"));
         resultField = new JTextField(10);
+        panel.add(new JLabel("Result:"));
         panel.add(resultField);
 
         // Button to calculate and display result
@@ -67,20 +51,13 @@ public class MainGUI {
         panel.add(calculateButton);
 
         // Output area
-        outputArea = new JTextArea(5, 40);
+        outputArea = new JTextArea(8, 40);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
         panel.add(scrollPane);
 
-        // Byt eventlista när mode ändras
-        modeBox.addActionListener(ev -> {
-            String m = (String) modeBox.getSelectedItem();
-            disciplineBox.removeAllItems();
-            String[] src = MODE_HEP.equals(m) ? HEP_EVENTS : DEC_EVENTS;
-            for (String s : src) disciplineBox.addItem(s);
-        });
-
         frame.add(panel);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -89,55 +66,104 @@ public class MainGUI {
         public void actionPerformed(ActionEvent e) {
             String name = nameField.getText().trim();
             String discipline = (String) disciplineBox.getSelectedItem();
-            String mode = (String) modeBox.getSelectedItem();
+            String resultText = resultField.getText().trim();
 
-            if (discipline == null || mode == null) {
-                JOptionPane.showMessageDialog(null, "Please select mode and discipline.", "Missing Selection", JOptionPane.WARNING_MESSAGE);
+            // Validate competitor name using InputName
+            if (!InputName.isValidName(name)) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Please enter a valid name (letters only).",
+                        "Invalid Name",
+                        JOptionPane.ERROR_MESSAGE
+                );
                 return;
             }
 
             try {
-                double result = Double.parseDouble(resultField.getText().trim());
-                int score = 0;
+                double result = Double.parseDouble(resultText);
 
-                if (MODE_DEC.equals(mode)) {
-                    switch (discipline) {
-                        case "100m":          score = new Deca100M().calculateResult(result); break;
-                        case "400m":          score = new Deca400M().calculateResult(result); break;
-                        case "1500m":         score = new Deca1500M().calculateResult(result); break;
-                        case "110m Hurdles":  score = new Deca110MHurdles().calculateResult(result); break;
-                        case "Long Jump":     score = new DecaLongJump().calculateResult(result); break;
-                        case "High Jump":     score = new DecaHighJump().calculateResult(result); break;
-                        case "Pole Vault":    score = new DecaPoleVault().calculateResult(result); break;
-                        case "Discus Throw":  score = new DecaDiscusThrow().calculateResult(result); break;
-                        case "Javelin Throw": score = new DecaJavelinThrow().calculateResult(result); break;
-                        case "Shot Put":      score = new DecaShotPut().calculateResult(result); break;
-                        default: throw new IllegalArgumentException("Unknown decathlon event: " + discipline);
+                int score = 0;
+                switch (discipline) {
+                    case "100m (s)": {
+                        Deca100M deca100M = new Deca100M();
+                        score = deca100M.calculateResult(result);
+                        break;
                     }
-                } else { // Heptathlon
-                    // OBS! Byt klassnamn nedan om dina heptathlon-klasser heter något annat
-                    switch (discipline) {
-                        case "100m Hurdles":  score = new Hep100MHurdles().calculateResult(result); break;
-                        case "High Jump":     score = new HeptHightJump().calculateResult(result); break;
-                        case "Shot Put":      score = new HeptShotPut().calculateResult(result); break;
-                        case "200m":          score = new Hep200M().calculateResult(result); break;
-                        case "Long Jump":     score = new HeptLongJump().calculateResult(result); break;
-                        case "Javelin Throw": score = new HeptJavelinThrow().calculateResult(result); break;
-                        case "800m":          score = new Hep800M().calculateResult(result); break;
-                        default: throw new IllegalArgumentException("Unknown heptathlon event: " + discipline);
+                    case "400m (s)": {
+                        Deca400M deca400M = new Deca400M();
+                        score = deca400M.calculateResult(result);
+                        break;
                     }
+                    case "1500m (s)": {
+                        Deca1500M deca1500M = new Deca1500M();
+                        score = deca1500M.calculateResult(result);
+                        break;
+                    }
+                    case "110m Hurdles (s)": {
+                        Deca110MHurdles deca110MHurdles = new Deca110MHurdles();
+                        score = deca110MHurdles.calculateResult(result);
+                        break;
+                    }
+                    case "Long Jump (cm)": {
+                        DecaLongJump decaLongJump = new DecaLongJump();
+                        score = decaLongJump.calculateResult(result);
+                        break;
+                    }
+                    case "High Jump (cm)": {
+                        DecaHighJump decaHighJump = new DecaHighJump();
+                        score = decaHighJump.calculateResult(result);
+                        break;
+                    }
+                    case "Pole Vault (cm)": {
+                        DecaPoleVault decaPoleVault = new DecaPoleVault();
+                        score = decaPoleVault.calculateResult(result);
+                        break;
+                    }
+                    case "Discus Throw (m)": {
+                        DecaDiscusThrow decaDiscusThrow = new DecaDiscusThrow();
+                        score = decaDiscusThrow.calculateResult(result);
+                        break;
+                    }
+                    case "Javelin Throw (m)": {
+                        DecaJavelinThrow decaJavelinThrow = new DecaJavelinThrow();
+                        score = decaJavelinThrow.calculateResult(result);
+                        break;
+                    }
+                    case "Shot Put (m)": {
+                        DecaShotPut decaShotPut = new DecaShotPut();
+                        score = decaShotPut.calculateResult(result);
+                        break;
+                    }
+                    default:
+                        // If no discipline is selected (should not happen)
+                        JOptionPane.showMessageDialog(
+                                null,
+                                "Please select a discipline.",
+                                "No Discipline Selected",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
                 }
 
+                // Append the result to the output area
                 outputArea.append("Competitor: " + name + "\n");
-                outputArea.append("Mode: " + mode + "\n");
                 outputArea.append("Discipline: " + discipline + "\n");
                 outputArea.append("Result: " + result + "\n");
                 outputArea.append("Score: " + score + "\n\n");
-
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid number for the result.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
-            } catch (IllegalArgumentException ex) {
-                JOptionPane.showMessageDialog(null, ex.getMessage(), "Configuration Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Please enter a valid number for the result.",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            } catch (InvalidResultException ex) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        ex.getMessage(),
+                        "Invalid Result",
+                        JOptionPane.ERROR_MESSAGE
+                );
             }
         }
     }
