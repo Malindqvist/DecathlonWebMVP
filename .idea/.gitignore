@@ -52,7 +52,6 @@ yarn.lock
 
 # Build output (frontend frameworks like React/Vue/Angular)
 dist/
-build/
 
 # Coverage reports
 coverage/
