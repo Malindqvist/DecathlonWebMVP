@@ -26,11 +26,19 @@ el('add').addEventListener('click', async (evt) => {
 });
 
 el('save').addEventListener('click', async () => {
+  const rawValue = parseFloat(el('raw').value);
+  if (isNaN(rawValue) || rawValue < 0) {
+     setError('Negative result is not possible.');
+     return;
+  }
+
+
   const body = {
     name: el('name2').value,
     event: el('event').value,
     raw: parseFloat(el('raw').value)
   };
+
   console.log('POST /api/score payload:', body);
   try {
     const res = await fetch('/api/score', {

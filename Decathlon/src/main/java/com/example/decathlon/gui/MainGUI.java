@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.*;
 import com.example.decathlon.deca.*; // contains Deca100M, Deca400M, ... and InvalidResultException
 import com.example.decathlon.common.InputName;
+import com.example.decathlon.heptathlon.*;
 
 public class MainGUI {
 
@@ -34,7 +35,9 @@ public class MainGUI {
         String[] disciplines = {
                 "100m (s)", "Long Jump (cm)", "Shot Put (m)", "High Jump (cm)",
                 "400m (s)", "110m Hurdles (s)", "Discus Throw (m)", "Pole Vault (cm)",
-                "Javelin Throw (m)", "1500m (s)"
+                "Javelin Throw (m)", "1500m (s)",
+                "Hep 100m Hurdles", "Hep High Jump", "Hep Shot Put",
+                "Hep 200m", "Hep Long Jump", "Hep Javelin Throw", "Hep 800m"
         };
         disciplineBox = new JComboBox<>(disciplines);
         panel.add(new JLabel("Select Discipline:"));
@@ -134,6 +137,14 @@ public class MainGUI {
                         score = decaShotPut.calculateResult(result);
                         break;
                     }
+                    case "Hep 100m Hurdles":    score = new Hep100MHurdles().calculateResult(result); break;
+                    case "Hep High Jump":       score = new HeptHightJump().calculateResult(result); break;
+                    case "Hep Shot Put":        score = new HeptShotPut().calculateResult(result); break;
+                    case "Hep 200m":            score = new Hep200M().calculateResult(result); break;
+                    case "Hep Long Jump":       score = new HeptLongJump().calculateResult(result); break;
+                    case "Hep Javelin Throw":   score = new HeptJavelinThrow().calculateResult(result); break;
+                    case "Hep 800m":            score = new Hep800M().calculateResult(result); break;
+
                     default:
                         // If no discipline is selected (should not happen)
                         JOptionPane.showMessageDialog(
