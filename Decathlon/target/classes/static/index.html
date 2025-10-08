@@ -16,8 +16,20 @@
 <body>
 <h1>Track and Field Calculator</h1>
 
+<!-- Mode -->
 <div class="card">
-    <h2>Enter Competitor's Name</h2>
+    <h2>Mode</h2>
+    <div class="row">
+        <label for="mode">Disciplin</label>
+        <select id="mode">
+            <option value="heptathlon">Heptathlon</option>
+            <option value="decathlon">Decathlon</option>
+        </select>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Add competitor</h2>
     <div class="row">
         <label for="name">Name</label>
         <input id="name" data-testid="competitorNameInput" placeholder="e.g., Anna" />
@@ -31,23 +43,12 @@
     <div class="row">
         <label for="name2">Name</label>
         <input id="name2" placeholder="same as above" />
-        <label for="event">Select Discipline</label>
-        <select id="event" data-testid="eventSelect">
-            <option value="100m">100m (s)</option>
-            <option value="longJump">Long Jump (cm)</option>
-            <option value="shotPut">Shot Put (m)</option>
-            <option value="highJump">High Jump (cm)</option>
-            <option value="400m">400m (s)</option>
-            <option value="110mHurdles">110m Hurdles (s)</option>
-            <option value="discus">Discus Throw (m)</option>
-            <option value="poleVault">Pole Vault (cm)</option>
-            <option value="javelin">Javelin Throw (m)</option>
-            <option value="1500m">1500m (s)</option>
-        </select>
+        <label for="event">Event</label>
+        <select id="event" data-testid="eventSelect"></select>
 
         <label for="raw">Result</label>
         <input id="raw" data-testid="rawInput" type="number" step="0.01" />
-        <button id="save" data-testid="saveScoreBtn">Calculate score</button>
+        <button id="save" data-testid="saveScoreBtn">Save score</button>
     </div>
     <div id="msg" aria-live="polite"></div>
 </div>
@@ -56,26 +57,13 @@
     <h2>Standings</h2>
     <table>
         <thead>
-        <tr>
-            <th>Name</th>
-            <th>100m</th>
-            <th>Long Jump</th>
-            <th>Shot Put</th>
-            <th>High Jump</th>
-            <th>400m</th>
-            <th>110m Hurdles</th>
-            <th>Discus Throw</th>
-            <th>Pole Vault</th>
-            <th>Javelin Throw</th>
-            <th>1500m</th>
-            <th>Total</th>
-        </tr>
+        <tr id="thead-row"></tr>
         </thead>
         <tbody id="standings" data-testid="standingsTable"></tbody>
     </table>
     <button id="export" data-testid="exportCsvBtn">Export CSV</button>
 </div>
 
-<script src="app.js?v=2" type="module"></script>
+<script src="app.js?v=3" type="module"></script>
 </body>
 </html>

@@ -22,52 +22,66 @@ public class MainGUI {
     private void createAndShowGUI() {
         JFrame frame = new JFrame("Track and Field Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 450);
+        frame.setSize(700, 600);
 
-        JPanel panel = new JPanel(new GridLayout(7, 1));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Input for competitor's name
+        // === Top area for inputs ===
+        JPanel inputPanel = new JPanel(new GridLayout(0, 2, 5, 5));
+
         nameField = new JTextField(20);
-        panel.add(new JLabel("Enter Competitor's Name:"));
-        panel.add(nameField);
+        inputPanel.add(new JLabel("Enter Competitor's Name:"));
+        inputPanel.add(nameField);
 
-        // Dropdown for selecting a discipline
+        String[] categories = {"Decathlon", "Heptathlon"};
+        JComboBox<String> categoryBox = new JComboBox<>(categories);
+        inputPanel.add(new JLabel("Select Category:"));
+        inputPanel.add(categoryBox);
+
         String[] disciplines = {
                 "100m (s)", "Long Jump (cm)", "Shot Put (m)", "High Jump (cm)",
                 "400m (s)", "110m Hurdles (s)", "Discus Throw (m)", "Pole Vault (cm)",
-                "Javelin Throw (m)", "1500m (s)",
-                "Hep 100m Hurdles", "Hep High Jump", "Hep Shot Put",
-                "Hep 200m", "Hep Long Jump", "Hep Javelin Throw", "Hep 800m"
+                "Javelin Throw (m)", "1500m (s)"
         };
         disciplineBox = new JComboBox<>(disciplines);
-        panel.add(new JLabel("Select Discipline:"));
-        panel.add(disciplineBox);
+        inputPanel.add(new JLabel("Select Discipline:"));
+        inputPanel.add(disciplineBox);
 
-        // Input for result
         resultField = new JTextField(10);
-        panel.add(new JLabel("Result:"));
-        panel.add(resultField);
+        inputPanel.add(new JLabel("Result:"));
+        inputPanel.add(resultField);
 
-        // Button to calculate and display result
         JButton calculateButton = new JButton("Calculate Score");
-        calculateButton.addActionListener(new CalculateButtonListener());
-        panel.add(calculateButton);
+        calculateButton.addActionListener(new CalculateButtonListener(categoryBox));
 
-        // Output area
-        outputArea = new JTextArea(8, 40);
+        // === Output area (bottom, much bigger) ===
+        outputArea = new JTextArea(20, 60);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
-        panel.add(scrollPane);
 
-        frame.add(panel);
+        // === Add to main layout ===
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+        mainPanel.add(calculateButton, BorderLayout.CENTER);
+        mainPanel.add(scrollPane, BorderLayout.SOUTH);
+
+        frame.add(mainPanel);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
+
     private class CalculateButtonListener implements ActionListener {
+        private JComboBox<String> categoryBox;
+
+        public CalculateButtonListener(JComboBox<String> categoryBox) {
+            this.categoryBox = categoryBox;
+        }
+
         @Override
         public void actionPerformed(ActionEvent e) {
             String name = nameField.getText().trim();
+            String category = (String) categoryBox.getSelectedItem(); // <-- added line
             String discipline = (String) disciplineBox.getSelectedItem();
             String resultText = resultField.getText().trim();
 
@@ -158,6 +172,7 @@ public class MainGUI {
 
                 // Append the result to the output area
                 outputArea.append("Competitor: " + name + "\n");
+                outputArea.append("Category: " + category + "\n"); // <-- added line
                 outputArea.append("Discipline: " + discipline + "\n");
                 outputArea.append("Result: " + result + "\n");
                 outputArea.append("Score: " + score + "\n\n");
